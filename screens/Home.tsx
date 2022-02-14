@@ -48,10 +48,6 @@ const DOUBLE_BUZZ = '{"ID":"cmd","data":"double_buzz"}'
 const DISPLAY_SMILE = '{"ID":"cmd","data":"disp_smile"}'
 
 
-//const Home = (props) => {
-
-    //const { connectFunction, disconnectFunction, isConnected, deviceValue, deviceBattery, buzzFunction } = props
-
 const Home = ( {navigation} ) => {
 
 //Is a device connected?

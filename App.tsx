@@ -17,6 +17,8 @@ import MainStack from './navigation/MainStack';
 // Example:
 // https://github.com/catarizea/bvm-ventilator-covid/tree/blog-post-ble-client
 
+// Tutorial: https://www.youtube.com/channel/UCVIbRw_-6VgrYbS6cbs0Bkw/videos
+
 import {LogBox} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
