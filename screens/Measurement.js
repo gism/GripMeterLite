@@ -9,9 +9,7 @@ import {
 
 import {styles} from '../Styles/styles';
 
-const Logbook = ( {navigation, route} ) => {
-
-  const { nombre } = route.params
+const Measurement = ( {navigation} ) => {
 
     return (
         <View>
@@ -27,12 +25,11 @@ const Logbook = ( {navigation, route} ) => {
             resizeMode="contain"
           />
 
-          <View style={styles.rowView}>
-            <Text style={styles.versionText}>This is Logbook screen!</Text>
-            <Text style={styles.versionText}>Nombre enviado: { nombre } </Text>
-          </View>
+            <View style={styles.rowView}>
+            <Text style={styles.versionText}>This is Measurement screen</Text>
+            </View>
         </View>
     )
 }
 
-export default Logbook
+export default Measurement

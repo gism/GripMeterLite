@@ -8,7 +8,8 @@ import {
   Image,
 } from 'react-native';
 
-import Home from './screens/Home'
+import MainStack from './navigation/MainStack';
+
 
 // TODO: 
 // Insert chart
@@ -16,26 +17,16 @@ import Home from './screens/Home'
 // Example:
 // https://github.com/catarizea/bvm-ventilator-covid/tree/blog-post-ble-client
 
-
-
-
 import {LogBox} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 LogBox.ignoreLogs(['new NativeEventEmitter']);    // Ignore log notification by message
 LogBox.ignoreAllLogs();                           //Ignore all log notifications
 
-
-
 export default function App() {
-  
   return (
-
-      <SafeAreaView>
-
-      <Home 
-      />
-
+    <SafeAreaView style = {{ flex: 1}}>
+      <MainStack/>
     </SafeAreaView>    
   );
 }
