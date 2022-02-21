@@ -8,9 +8,14 @@ import Measurement from "../screens/Measurement";
 
 const Stack = createNativeStackNavigator()
 
+var a = [];
+
 const MainStack = () => {
     return(
+
         <NavigationContainer>
+
+
             <Stack.Navigator
                 screenOptions = {{
                    //headerShown: false, 
