@@ -1,32 +1,4 @@
-Skip to content
-Search or jump to…
-Pull requests
-Issues
-Marketplace
-Explore
  
-@gism 
-gism
-/
-GripMeterLite
-Public
-Code
-Issues
-Pull requests
-Actions
-Projects
-Wiki
-Security
-Insights
-Settings
-GripMeterLite/screens/Home.tsx /
-
-GripMeter Add static chart!
-Latest commit afac57d 7 days ago
- History
- 0 contributors
-424 lines (357 sloc)  12.3 KB
-   
 import React, {useState} from 'react';
 import {
    Button,

@@ -28,6 +28,7 @@ import {
   } from '../components/Reducer';
 import { SensorTagTests, type SensorTagTestMetadata } from './Tests';
 import {styles, COLORS} from '../Styles/styles';
+import {DeviceHandler} from '../components/DeviceHandler';
 
 type Props = {
   sensorTag: ?Device,
@@ -47,11 +48,18 @@ type State = {
 };
 
 class Home extends Component<Props, State> {
+
+  //deviceHandler: DeviceHandler;
+
+  const [scaleValueState, setScaleValueState] = useState('- kg');
+
   constructor(props: Props) {
     super(props);
     this.state = {
       showModal: false,
     };
+
+    this.deviceHandler = new DeviceHandler();
   }
 
   sensorDeviceStatus(): string {
@@ -61,6 +69,9 @@ class Home extends Component<Props, State> {
       case ConnectionState.DISCOVERING:
         return 'Discovering...';
       case ConnectionState.CONNECTED:
+        //this.subscribeScaleChar(this.props.sensorTag);
+        this.deviceHandler.setDevice(this.props.sensorTag);
+
         return 'Connected';
       case ConnectionState.DISCONNECTED:
       case ConnectionState.DISCONNECTING:
@@ -104,7 +115,7 @@ class Home extends Component<Props, State> {
           resizeMode="contain"
         />
         <Text style={styles.textStyle, {alignSelf: 'center'}} numberOfLines={1}>
-          {this.sensorDeviceStatus()}
+          {this.sensorDeviceStatus() + " RAW: " + this.deviceHandler.scaleValue.toFixed(2)}
         </Text>
         <View style={{paddingBottom: 20}}></View>
         

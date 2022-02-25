@@ -209,7 +209,7 @@ function* handleConnection(manager: BleManager): Generator<*, *, *> {
 
     try {
       yield put(updateConnectionState(ConnectionState.CONNECTING));
-      yield call([device, device.connect]);
+      yield call([device, device.connect, {requestMTU:303}]);
       yield put(updateConnectionState(ConnectionState.DISCOVERING));
       yield call([device, device.discoverAllServicesAndCharacteristics]);
       yield put(updateConnectionState(ConnectionState.CONNECTED));
