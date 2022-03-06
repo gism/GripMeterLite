@@ -9,6 +9,12 @@ import {bleSaga} from './Saga';
 // Example: How to use react-saga with BLE library:
 // https://github.com/PolideaPlayground/SensorTag
 
+
 const sagaMiddleware = createSagaMiddleware();
 export const store = createStore(reducer, applyMiddleware(sagaMiddleware));
 sagaMiddleware.run(bleSaga);
+
+
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
+export const useAppDispatch = () => useDispatch<AppDispatch>();

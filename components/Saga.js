@@ -22,6 +22,7 @@ import {
   type ExecuteTestAction,
   sensorTagFound,
   ConnectionState,
+  updateScaleValue,
 } from './Reducer';
 import {
   BleManager,
@@ -30,20 +31,23 @@ import {
   State,
   LogLevel,
 } from 'react-native-ble-plx';
+import bleDeviceHandler from './BleDeviceHandler';
+
 import { SensorTagTests } from './Tests';
 
 export function* bleSaga(): Generator<*, *, *> {
-  yield put(log('Hola, BLE saga started...'));
+  yield put(log('BLE saga started...'));
 
   // First step is to create BleManager which should be used as an entry point
   // to all BLE related functionalities
-  const manager = new BleManager();
-  manager.setLogLevel(LogLevel.Verbose);
+  //const manager = new BleManager();             // Now this is managed at bleDeviceHandler
+  //manager.setLogLevel(LogLevel.Verbose);        // Now this is managed at bleDeviceHandler
 
   // All below generators are described below...
-  yield fork(handleScanning, manager);
-  yield fork(handleBleState, manager);
-  yield fork(handleConnection, manager);
+  yield fork(handleBleDeviceScanning, bleDeviceHandler.bleManager);
+  yield fork(handleBleState, bleDeviceHandler.bleManager);
+  yield fork(handleBleConnection, bleDeviceHandler.bleManager);
+  
 }
 
 // This generator tracks our BLE state. Based on that we can enable scanning, get rid of devices etc.
@@ -75,11 +79,10 @@ function* handleBleState(manager: BleManager): Generator<*, *, *> {
 // * BLE state is in PoweredOn state
 // * Android's permissions for scanning are granted
 // * We already scanned device which we wanted
-function* handleScanning(manager: BleManager): Generator<*, *, *> {
+function* handleBleDeviceScanning(manager: BleManager): Generator<*, *, *> {
   var scanTask = null;
   var bleState: $Keys<typeof State> = State.Unknown;
-  var connectionState: $Keys<typeof ConnectionState> =
-    ConnectionState.DISCONNECTED;
+  var connectionState: $Keys<typeof ConnectionState> = ConnectionState.DISCONNECTED;
 
   const channel = yield actionChannel([
     'BLE_STATE_UPDATED',
@@ -156,7 +159,16 @@ function* scan(manager: BleManager): Generator<*, *, *> {
         }
 
         //console.log('manager.startDeviceScan --> found: ', scannedDevice.localName);
-        if (scannedDevice != null && scannedDevice.localName === 'GripMeter') {  // SensorTag
+        if (scannedDevice != null && scannedDevice.localName?.toLowerCase()?.includes('gripmeter')) {  // SensorTag
+          
+          // TO DO: Manage avaiable devices list!
+          //const isDuplicate = state.availableDevices.some(
+          //  device => device.id === action.payload.id,
+          //);
+          //if (!isDuplicate) {
+          //  state.availableDevices = state.availableDevices.concat(action.payload);
+          //}
+          
           emit([error, scannedDevice]);
         }
       },
@@ -186,7 +198,7 @@ function* scan(manager: BleManager): Generator<*, *, *> {
   }
 }
 
-function* handleConnection(manager: BleManager): Generator<*, *, *> {
+function* handleBleConnection(manager: BleManager): Generator<*, *, *> {
   var testTask = null;
 
   for (; ;) {
@@ -214,6 +226,18 @@ function* handleConnection(manager: BleManager): Generator<*, *, *> {
       yield call([device, device.discoverAllServicesAndCharacteristics]);
       yield put(updateConnectionState(ConnectionState.CONNECTED));
 
+      if (device == null){
+        yield put(log('ERROR: Device Null'));
+      }else{
+        yield put(log('OK: Device not Null'));
+      }
+      
+      bleDeviceHandler.setDevice(device);            //yield call(bleDeviceHandler.setDevice, device);
+      
+      yield fork(handleGetScaleValuesUpdates); 
+      yield fork(handleGetBatteryValuesUpdates);
+      yield fork(handleGetConfigValuesUpdates);
+      
       for (; ;) {
         const { deviceAction, disconnected } = yield race({
           deviceAction: take(deviceActionChannel),
@@ -228,6 +252,7 @@ function* handleConnection(manager: BleManager): Generator<*, *, *> {
             break;
           }
           if (deviceAction.type === 'EXECUTE_TEST') {
+
             if (testTask != null) {
               yield cancel(testTask);
             }
@@ -250,6 +275,100 @@ function* handleConnection(manager: BleManager): Generator<*, *, *> {
     }
   }
 }
+
+
+
+function* handleGetScaleValuesUpdates(): Generator<AnyAction, void, TakeableHeartRate> {
+
+  yield put(log('handleGetScaleValuesUpdates: started...'));
+
+  const onScaleValueUpdate = () =>
+    eventChannel(emitter => {
+      bleDeviceHandler.startStreamingScaleData(emitter);
+
+      return () => {
+        bleDeviceHandler.stopScanningForPeripherals();
+      };
+    });
+
+    const channel: TakeableChannel<string> = yield call(onScaleValueUpdate);
+
+    try {
+      while (true) {
+        const response = yield take(channel);
+        yield put(updateScaleValue(response.payload));
+      }
+    } catch (e) {
+      console.log(e);
+    }
+}
+
+function* handleGetConfigValuesUpdates(): Generator<AnyAction, void, TakeableHeartRate> {
+
+  const onConfigValueUpdate = () =>
+    eventChannel(emitter => {
+      bleDeviceHandler.startStreamingConfigData(emitter);
+
+      return () => {
+        // bleDeviceHandler.stopScanningForPeripherals();
+      };
+    });
+
+    const channel: TakeableChannel<string> = yield call(onConfigValueUpdate);
+
+    try {
+      while (true) {
+        const response = yield take(channel);
+        //yield put({
+        //  type: sagaActionConstants.UPDATE_HEART_RATE,
+        //  payload: response.payload,
+        //});
+      }
+    } catch (e) {
+      console.log(e);
+    }
+}
+
+function* handleGetBatteryValuesUpdates(): Generator<AnyAction, void, TakeableHeartRate> {
+
+  yield put(log('handleGetBatteryValuesUpdates: started...'));
+
+  const onBatteryValueUpdate = () =>
+    eventChannel(emitter => {
+      bleDeviceHandler.startStreamingBatteryData(emitter);
+
+      return () => {
+        // bleDeviceHandler.stopScanningForPeripherals();
+      };
+    });
+
+    const channel: TakeableChannel<string> = yield call(onBatteryValueUpdate);
+
+    try {
+      while (true) {
+        const response = yield take(channel);
+        //yield put({
+        //  type: sagaActionConstants.UPDATE_HEART_RATE,
+        //  payload: response.payload,
+        //});
+      }
+    } catch (e) {
+      console.log(e);
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 function* executeTest(
   device: Device,

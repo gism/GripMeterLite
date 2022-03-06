@@ -1,4 +1,5 @@
 import {State, Device, BleError} from 'react-native-ble-plx';
+import {BluetoothPeripheral} from './BleDeviceHandler';
 
 export type Action =
   | LogAction
@@ -10,7 +11,8 @@ export type Action =
   | SensorTagFoundAction
   | ForgetSensorTagAction
   | ExecuteTestAction
-  | TestFinishedAction;
+  | TestFinishedAction
+  | UpdateScaleValue;
 
 export type LogAction = {|
   type: 'LOG',
@@ -58,14 +60,10 @@ export type TestFinishedAction = {|
   type: 'TEST_FINISHED',
 |};
 
-export type ReduxState = {
-  logs: Array<string>,
-  activeError: ?BleError,
-  activeSensorTag: ?Device,
-  connectionState: $Keys<typeof ConnectionState>,
-  currentTest: ?string,
-  bleState: $Keys<typeof State>,
-};
+export type UpdateScaleValue = {|
+  type: 'UPDATE_SCALE_VALUE',
+  payload: Number,
+|};
 
 export const ConnectionState = {
   DISCONNECTED: 'DISCONNECTED',
@@ -73,15 +71,6 @@ export const ConnectionState = {
   DISCOVERING: 'DISCOVERING',
   CONNECTED: 'CONNECTED',
   DISCONNECTING: 'DISCONNECTING',
-};
-
-export const initialState: ReduxState = {
-  bleState: State.Unknown,
-  activeError: null,
-  activeSensorTag: null,
-  connectionState: ConnectionState.DISCONNECTED,
-  currentTest: null,
-  logs: [],
 };
 
 export function log(message: string): LogAction {
@@ -169,10 +158,39 @@ export function testFinished(): TestFinishedAction {
   };
 }
 
+export function updateScaleValue(v: Number): UpdateScaleValue{
+  return {
+    type: 'UPDATE_SCALE_VALUE',
+    payload: v,
+  }
+}
+
+export type BluetoothState = {
+  availableDevices: Array<BluetoothPeripheral>;
+  logs: Array<string>,
+  activeError: ?BleError,
+  activeSensorTag: ?Device,
+  connectionState: $Keys<typeof ConnectionState>,
+  currentTest: ?string,
+  bleState: $Keys<typeof State>,
+  scaleValue: Number,
+};
+
+export const initialState: BleReducerState = {
+  availableDevices: [],
+  bleState: State.Unknown,
+  activeError: null,
+  activeSensorTag: null,
+  connectionState: ConnectionState.DISCONNECTED,
+  currentTest: null,
+  logs: [],
+  scaleValue: 0,
+};
+
 export function reducer(
-  state: ReduxState = initialState,
+  state: BleReducerState = initialState,
   action: Action,
-): ReduxState {
+): BleReducerState {
   switch (action.type) {
     case 'LOG':
       return {...state, logs: [action.message, ...state.logs]};
@@ -209,6 +227,11 @@ export function reducer(
       return {...state, currentTest: action.id};
     case 'TEST_FINISHED':
       return {...state, currentTest: null};
+    case 'UPDATE_SCALE_VALUE':
+      return {
+        ...state,
+        scaleValue: action.payload
+      };
     default:
       return state;
   }

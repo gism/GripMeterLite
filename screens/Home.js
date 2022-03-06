@@ -1,5 +1,6 @@
 import React, {useState, Component} from 'react';
-import { connect as reduxConnect } from 'react-redux';
+import { Provider, useDispatch, useSelector, connect as reduxConnect } from 'react-redux';
+import {RootState, store} from '../components/Store';
 import base64 from 'react-native-base64';
 import { Device } from 'react-native-ble-plx';
 import {
@@ -28,7 +29,7 @@ import {
   } from '../components/Reducer';
 import { SensorTagTests, type SensorTagTestMetadata } from './Tests';
 import {styles, COLORS} from '../Styles/styles';
-import {DeviceHandler} from '../components/DeviceHandler';
+//import {BleDeviceHandler} from '../components/BleDeviceHandler';
 
 type Props = {
   sensorTag: ?Device,
@@ -40,6 +41,7 @@ type Props = {
   executeTest: typeof executeTest,
   currentTest: ?string,
   forgetSensorTag: typeof forgetSensorTag,
+  scaleValue : Number,
   navigation: navigation,
 };
 
@@ -49,18 +51,12 @@ type State = {
 
 class Home extends Component<Props, State> {
 
-  //deviceHandler: DeviceHandler;
-
-  const [scaleValueState, setScaleValueState] = useState('- kg');
-
   constructor(props: Props) {
     super(props);
     this.state = {
       showModal: false,
     };
-
-    this.deviceHandler = new DeviceHandler();
-  }
+  };
 
   sensorDeviceStatus(): string {
     switch (this.props.connectionState) {
@@ -70,7 +66,7 @@ class Home extends Component<Props, State> {
         return 'Discovering...';
       case ConnectionState.CONNECTED:
         //this.subscribeScaleChar(this.props.sensorTag);
-        this.deviceHandler.setDevice(this.props.sensorTag);
+        //this.deviceHandler.setDevice(this.props.sensorTag);
 
         return 'Connected';
       case ConnectionState.DISCONNECTED:
@@ -115,7 +111,7 @@ class Home extends Component<Props, State> {
           resizeMode="contain"
         />
         <Text style={styles.textStyle, {alignSelf: 'center'}} numberOfLines={1}>
-          {this.sensorDeviceStatus() + " RAW: " + this.deviceHandler.scaleValue.toFixed(2)}
+          {this.sensorDeviceStatus()} y {this.props.scaleValue} kg
         </Text>
         <View style={{paddingBottom: 20}}></View>
         
@@ -152,6 +148,18 @@ class Home extends Component<Props, State> {
               alert('hola: do measurement');
             }}
             title={'DO MEASUREMENT'}
+          />
+        </View>
+
+        <View style={{ flexDirection: 'row', paddingTop: 5 }}>
+          <Button
+            disabled={!this.isSensorDeviceReadyToExecute()}
+            style={{ flex: 1 }}
+            onPress={() => {
+              alert('hola: do measurement');
+              this.props.executeTest(item.id);
+            }}
+            title={'GET SCALE VALUES! :)'}
           />
         </View>
 
@@ -297,6 +305,7 @@ export default reduxConnect(
     sensorTag: state.activeSensorTag,
     connectionState: state.connectionState,
     currentTest: state.currentTest,
+    scaleValue :state.scaleValue,
   }),
   {
     clearLogs,
