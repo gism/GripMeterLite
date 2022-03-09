@@ -41,6 +41,7 @@ class BleDeviceHandler {
     batteryLvl: Number;
     serialNumber: String;
     configInit: Boolean;
+    basetime: Number;
 
     constructor() {
 
@@ -57,6 +58,7 @@ class BleDeviceHandler {
       this.scaleFactor = 1;
       this.scaleOffset = 0;
       this.configInit = false;
+      this.basetime = Date.now();
     }
 
     setDevice(device: Device){
@@ -109,8 +111,8 @@ class BleDeviceHandler {
        
        //console.log('Tare: ', scaleTare, ' Factor: ', scaleFactor, ' HEX: ', hexString, ' Raw: ', scaleValue, ' PHY: ', scaleValuePhy.toFixed(2));
        this.scaleValue = scaleValue.toFixed(2);
-      
-       //console.log('Scale Value: ' + this.scaleValue + 'kg');
+       //let t = Date.now() - this.basetime;
+       //console.log(t + ' ms Scale Value: ' + this.scaleValue + 'kg');
     }
 
     // Callback when SCALE value (BLE Characteristic notification)
@@ -290,12 +292,28 @@ class BleDeviceHandler {
               var hexString = hexBuffer.join('');
               var battery = parseInt(hexString, 16);
               
-              console.log('Battery: ', battery);
+              //console.log('Battery: ', battery);
               this.batteryLvl = battery;
           }
         },
         'batterytransaction',
       );
+    }
+
+    //Function to Config json to GripMeter
+    sendConfig(value: string) {
+      this.bleManager.writeCharacteristicWithResponseForDevice(
+        this.device?.id,
+        this._SERVICE_UUID_GRIPMETER,
+        this._UUID_CONFIG,
+        base64.encode(value),
+      ).then(characteristic => {
+        console.log('Send config:', base64.decode(characteristic.value));
+      });
+    }
+
+    sendDoubleBuzzer(){
+      sendConfig(this._DOUBLE_BUZZ);
     }
 
   }

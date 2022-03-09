@@ -12,7 +12,8 @@ export type Action =
   | ForgetSensorTagAction
   | ExecuteTestAction
   | TestFinishedAction
-  | UpdateScaleValue;
+  | UpdateScaleValue
+  | SendConfigDevice;
 
 export type LogAction = {|
   type: 'LOG',
@@ -63,6 +64,11 @@ export type TestFinishedAction = {|
 export type UpdateScaleValue = {|
   type: 'UPDATE_SCALE_VALUE',
   payload: Number,
+|};
+
+export type SendConfigDevice = {|
+  type: 'SEND_CONFIG_DEVICE',
+  command: string,
 |};
 
 export const ConnectionState = {
@@ -158,10 +164,18 @@ export function testFinished(): TestFinishedAction {
   };
 }
 
-export function updateScaleValue(v: Number): UpdateScaleValue{
+export function updateScaleValue(v: Number): UpdateScaleValue {
   return {
     type: 'UPDATE_SCALE_VALUE',
     payload: v,
+  }
+}
+
+export function sendConfigDevice(s: String): sendConfigDevice {
+  console.log("Reducer received! SendConfigDevice: " + s);
+  return {
+    type: 'SEND_CONFIG_DEVICE',
+    command: s,
   }
 }
 
@@ -232,6 +246,9 @@ export function reducer(
         ...state,
         scaleValue: action.payload
       };
+    case 'SEND_CONFIG_DEVICE':
+      console.log('Reducer: switch case: SEND_CONFIG_DEVICE');
+      return state;
     default:
       return state;
   }

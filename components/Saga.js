@@ -217,11 +217,12 @@ function* handleBleConnection(manager: BleManager): Generator<*, *, *> {
     const deviceActionChannel = yield actionChannel([
       'DISCONNECT',
       'EXECUTE_TEST',
+      'UPDATE_SCALE_VALUE',
     ]);
 
     try {
       yield put(updateConnectionState(ConnectionState.CONNECTING));
-      yield call([device, device.connect, {requestMTU:303}]);
+      yield call([device, device.connect, {requestMTU:303}]);             // TODO: Not working?
       yield put(updateConnectionState(ConnectionState.DISCOVERING));
       yield call([device, device.discoverAllServicesAndCharacteristics]);
       yield put(updateConnectionState(ConnectionState.CONNECTED));
@@ -258,6 +259,12 @@ function* handleBleConnection(manager: BleManager): Generator<*, *, *> {
             }
             testTask = yield fork(executeTest, device, deviceAction);
           }
+
+          if (deviceAction.type === 'UPDATE_SCALE_VALUE'){
+            console.log("SAGA: Before fork: UPDATE_SCALE_VALUE: " + deviceAction.command);
+            //yield fork(bleDeviceHandler.send, deviceAction.command);
+          }
+
         } else if (disconnected) {
           yield put(log('Disconnected by device...'));
           if (disconnected.error != null) {
