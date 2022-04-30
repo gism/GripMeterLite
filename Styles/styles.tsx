@@ -9,6 +9,9 @@ export const COLORS = {
   primarybackground: '#F2F2F1',
   disable: '#2E5B94',
   enable: '#0077b6',
+
+  buttonColorActive: '#7735C2',
+  buttonColorDisable: '#a48cbf',
 }
 
 export const styles = StyleSheet.create({
@@ -40,16 +43,18 @@ export const styles = StyleSheet.create({
   },
   buttonStyle: {
     borderWidth: 0,
-    borderRadius: 5,
-    padding: 8,
-    backgroundColor: COLORS.enable,
-    color: COLORS.darktext,
+    borderRadius: 10,
+    padding: 10,
+    backgroundColor: COLORS.buttonColorActive,
+    color: COLORS.white,
     textAlign: 'center',
-    fontSize: 20,
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
   },
   disabledButtonStyle: {
-    backgroundColor: COLORS.disable,
-    color: COLORS.darktext,
+    backgroundColor: COLORS.buttonColorDisable,
+    color: COLORS.white,
   },
 });
 

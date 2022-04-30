@@ -9,6 +9,8 @@ import {
   race,
   cancelled,
   actionChannel,
+  takeEvery,
+  select,
 } from 'redux-saga/effects';
 import {
   log,
@@ -48,7 +50,26 @@ export function* bleSaga(): Generator<*, *, *> {
   yield fork(handleBleState, bleDeviceHandler.bleManager);
   yield fork(handleBleConnection, bleDeviceHandler.bleManager);
   
+  yield takeEvery('SEND_CONFIG_DEVICE', mangeBleConfig)
+
 }
+
+function* mangeBleConfig(action){
+
+  const state = yield select();
+  var connectionState: $Keys<typeof ConnectionState> = state.connectionState;
+
+  if (connectionState === ConnectionState.CONNECTED){
+    try{  
+      yield put(bleDeviceHandler.sendConfig(action.command));
+    }catch(e){
+      console.log('ERROR!: ' + e.message);
+    }
+  }
+}
+
+
+
 
 // This generator tracks our BLE state. Based on that we can enable scanning, get rid of devices etc.
 // eventChannel allows us to wrap callback based API which can be then conveniently used in sagas.
@@ -217,7 +238,7 @@ function* handleBleConnection(manager: BleManager): Generator<*, *, *> {
     const deviceActionChannel = yield actionChannel([
       'DISCONNECT',
       'EXECUTE_TEST',
-      'UPDATE_SCALE_VALUE',
+      'SEND_CONFIG_DEVICE',
     ]);
 
     try {
@@ -258,11 +279,6 @@ function* handleBleConnection(manager: BleManager): Generator<*, *, *> {
               yield cancel(testTask);
             }
             testTask = yield fork(executeTest, device, deviceAction);
-          }
-
-          if (deviceAction.type === 'UPDATE_SCALE_VALUE'){
-            console.log("SAGA: Before fork: UPDATE_SCALE_VALUE: " + deviceAction.command);
-            //yield fork(bleDeviceHandler.send, deviceAction.command);
           }
 
         } else if (disconnected) {

@@ -172,7 +172,6 @@ export function updateScaleValue(v: Number): UpdateScaleValue {
 }
 
 export function sendConfigDevice(s: String): sendConfigDevice {
-  console.log("Reducer received! SendConfigDevice: " + s);
   return {
     type: 'SEND_CONFIG_DEVICE',
     command: s,
@@ -247,7 +246,6 @@ export function reducer(
         scaleValue: action.payload
       };
     case 'SEND_CONFIG_DEVICE':
-      console.log('Reducer: switch case: SEND_CONFIG_DEVICE');
       return state;
     default:
       return state;

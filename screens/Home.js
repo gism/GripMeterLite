@@ -47,6 +47,8 @@ type Props = {
 
 type State = {
   showModal: boolean,
+  devTabs: Number,
+  showDevInfo: boolean,
 };
 
 class Home extends Component<Props, State> {
@@ -55,6 +57,7 @@ class Home extends Component<Props, State> {
     super(props);
     this.state = {
       showModal: false,
+      devTabs: 0,
     };
   };
 
@@ -99,25 +102,34 @@ class Home extends Component<Props, State> {
   renderHeader() {
     return (
       <View style={{ padding: 10 }}>
-        <Image
-          style={{
-            alignSelf: 'center',
-            height: 200,
-            width: 400,
-            borderWidth: 0,
-            borderRadius: 0
-          }}
-          source={require('../assets/GripMeter_Lite.png')}
-          resizeMode="contain"
-        />
+        <TouchableOpacity activeOpacity = { .9 } onPress={() => {
+              this.setState({ devTabs: this.state.devTabs + 1 });
+              console.log("DevTabs: " + this.state.devTabs);
+              if(this.state.devTabs > 20){
+                this.state.showDevInfo = true;
+              }
+            }}>
+          <Image
+            style={{
+              alignSelf: 'center',
+              height: 200,
+              width: 400,
+              borderWidth: 0,
+              borderRadius: 0
+            }}
+            source={require('../assets/GripMeter_Lite.png')}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+
         <Text style={styles.textStyle, {alignSelf: 'center'}} numberOfLines={1}>
-          {this.sensorDeviceStatus()} y {this.props.scaleValue} kg
+          {this.sensorDeviceStatus()}
         </Text>
+        
         <View style={{paddingBottom: 20}}></View>
         
         <View style={{ flexDirection: 'row', paddingTop: 5 }}>
-
-          {this.isSensorDeviceReadyToConnect() ? (
+          {!this.isSensorDeviceReadyToDisconnect() ? (
             <Button
             disabled={!this.isSensorDeviceReadyToConnect()}
             style={{ flex: 1 }}
@@ -135,7 +147,7 @@ class Home extends Component<Props, State> {
             onPress={() => {
               this.props.disconnect();
             }}
-            title={'Disconnect'}
+            title={'DISCONNECT'}
             />
           )}
         </View>
@@ -151,42 +163,10 @@ class Home extends Component<Props, State> {
           />
         </View>
 
-        <View style={{ flexDirection: 'row', paddingTop: 5 }}>
-          <Button
-            disabled={!this.isSensorDeviceReadyToExecute()}
-            style={{ flex: 1 }}
-            onPress={() => {
-              alert('hola: do measurement');
-              this.props.executeTest(item.id);
-            }}
-            title={'GET SCALE VALUES! :)'}
-          />
-        </View>
-
-        <View style={{ flexDirection: 'row', paddingTop: 5 }}>
-          <Button
-            disabled={!this.isSensorDeviceReadyToExecute()}
-            style={{ flex: 1 }}
-            onPress={() => {
-              this.setState({ showModal: true });
-            }}
-            title={'Execute test'}
-          />
-          <View style={{ width: 5 }} />
-          <Button
-            style={{ flex: 1 }}
-            disabled={this.props.sensorTag == null}
-            onPress={() => {
-              this.props.forgetSensorTag();
-            }}
-            title={'Forget'}
-          />
-        </View>
-
         {/* Logbook Button */}
         <View style={{ flexDirection: 'row', paddingTop: 15 }}>
           <Button
-            disabled={!this.isSensorDeviceReadyToExecute()}
+            // disabled={!this.isSensorDeviceReadyToExecute()}
             style={{ flex: 1 }}
             onPress={() => {
               console.log('GripMeter Info: TAP logbook');
@@ -220,7 +200,40 @@ class Home extends Component<Props, State> {
           }}
           title={'Clear logs'}
         />
+
+        <View style={{ flexDirection: 'row', paddingTop: 5 }}>
+          <Button
+            disabled={!this.isSensorDeviceReadyToExecute()}
+            style={{ flex: 1 }}
+            onPress={() => {
+              alert('hola: do measurement');
+              this.props.executeTest(item.id);
+            }}
+            title={'GET SCALE VALUES! :)'}
+          />
+          </View>
+
+          <View style={{ flexDirection: 'row', paddingTop: 5 }}>
+          <Button
+            disabled={!this.isSensorDeviceReadyToExecute()}
+            style={{ flex: 1 }}
+            onPress={() => {
+              this.setState({ showModal: true });
+            }}
+            title={'Execute test'}
+          />
+          <View style={{ width: 5 }} />
+          <Button
+            style={{ flex: 1 }}
+            disabled={this.props.sensorTag == null}
+            onPress={() => {
+              this.props.forgetSensorTag();
+            }}
+            title={'Forget'}
+          />
+        </View>
       </View>
+
     );
   }
 
@@ -288,11 +301,15 @@ class Home extends Component<Props, State> {
   }
 
   render() {
+    let logs;
+    if(this.state.showDevInfo) {
+      logs = this.renderLogs();
+    }
     return (
       <SafeAreaView style={styles.container}>
         <StatusBar barStyle="light-content" backgroundColor={COLORS.black} />
         {this.renderHeader()}
-        {this.renderLogs()}
+        {logs}
         {this.renderModal()}
       </SafeAreaView>
     );

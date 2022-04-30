@@ -44,7 +44,7 @@ type Props = {
   
   };
 
-let data = [0, 1 , -1];  // No idea how to do a class member?!
+let data = [0];  // No idea how to do a class member?!
 
 class Logbook extends Component {
     nombre: String;
@@ -59,7 +59,7 @@ class Logbook extends Component {
         this.nombre = props.route.params.nombre;
         this.props = props;
 
-        console.log(props)
+        //console.log(props)
     
         this.state = {
           showModal: false,

@@ -161,16 +161,18 @@ class BleDeviceHandler {
     ) => {
 
       if (error) {
+        console.log("ERROR: onConfigValueUpdate: " + error);
         emitter({payload: error});
+      }else{
+        const dataStr = base64.decode(characteristic?.value ?? '');
+
+        console.log("New BLE configuration: " + dataStr);
+        this.parseConfiguration(dataStr);
+
+        // TODO: RETURN SCUCCEED PAYLOAD?
+        emitter({payload: this.scaleValue});
       }
       
-      const dataStr = base64.decode(characteristic?.value ?? '');
-
-      console.log("New BLE configuration: " + dataStr);
-      this.parseConfiguration(dataStr);
-
-      // TODO: RETURN SCUCCEED PAYLOAD?
-      emitter({payload: this.scaleValue});
     };
 
     // Callback when Battery value (BLE Characteristic notification)
@@ -302,8 +304,7 @@ class BleDeviceHandler {
 
     //Function to Config json to GripMeter
     sendConfig(value: string) {
-      this.bleManager.writeCharacteristicWithResponseForDevice(
-        this.device?.id,
+      this.device.writeCharacteristicWithResponseForService(
         this._SERVICE_UUID_GRIPMETER,
         this._UUID_CONFIG,
         base64.encode(value),
